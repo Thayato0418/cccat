@@ -57,12 +57,12 @@ void print_with_color(char c) {
 /* 一行分の文字列を出力する関数  */
 void print_line(const char *linebuf, int line_num) {
     int content_width = 0;
-    int line_len = strlen(linebuf);
+    // int line_len = strlen(linebuf);
     char expanded_line[MAX_LINE * 4];
     int idx = 0;
 
     // タブや^I，$などの展開処理
-    for (int i = 0; i < line_len; i++) {
+    for (int i = 0; linebuf[i] != '\0'; i++) {
         if (opt_flag.show_tabs && linebuf[i] == '\t') {
             strcpy(&expanded_line[idx], "^I");
             idx += 2;
@@ -80,30 +80,46 @@ void print_line(const char *linebuf, int line_num) {
 
     expanded_line[idx] = '\0';
 
-    // 全体のセンタリング（64列の出力を80列の中央に配置）
+    int line_printed = 0;
+    int offset = 0;
+    
     int terminal_width = get_terminal_width();
     int margin = (terminal_width - LINE_DISPLAY_WIDTH) / 2;
-    for (int i = 0; i < margin; i++) {
-        dprintf(1, " ");
-    }
 
-    // 左揃えで行番号表示
-    if (opt_flag.number_all 
-            || (opt_flag.number_nonblank 
-                    && linebuf[0] != '\n' && linebuf[0] != '\0')) {
-        dprintf(1, "%6d\t", line_num);
-    }
+    while (offset < idx) {
+		for (int i = 0; i < margin; i++) {
+			dprintf(1, " ");
+		}
 
-    // 本文表示（色付きオプションあり）
-    for (int i = 0; i < idx; i++) {
-        if (opt_flag.use_color) {
-            print_with_color(expanded_line[i]);
-        } else {
-            write(1, &expanded_line[i], 1);
+		// 左揃えで行番号表示
+		if (opt_flag.number_all || (opt_flag.number_nonblank 
+					&& linebuf[0] != '\n' && linebuf[0] != '\0')) {
+			dprintf(1, "%6d\t", line_num);
+		} else if ((opt_flag.number_all || opt_flag.number_nonblank) 
+						&& line_printed > 0) {
+			            char number_buf[16];
+            snprintf(number_buf, sizeof(number_buf), "%6d\t", 0);
+			for (size_t i = 0; i < strlen(number_buf); i++) {
+                dprintf(1, " ");
+			}
+		}
+
+        int remaining = idx - offset;
+        int chunk = remaining < LINE_DISPLAY_WIDTH ? remaining : LINE_DISPLAY_WIDTH;
+        for (int i = 0; i < chunk; i++) {
+            char c = expanded_line[offset + i];
+            if (opt_flag.use_color) {
+                print_with_color(c);
+            } else {
+                dprintf(1, "%c", c);
+            }
         }
-    }
 
-    dprintf(1, "\n");
+        dprintf(1, "\n");
+
+        offset += chunk;
+        line_printed++;
+	}
 }
 
 /* catの本体  */
