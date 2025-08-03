@@ -57,7 +57,6 @@ void print_with_color(char c) {
 /* 一行分の文字列を出力する関数  */
 void print_line(const char *linebuf, int line_num) {
     int content_width = 0;
-//    int line_len = strlen(linebuf);
     char expanded_line[MAX_LINE * 4];
     int idx = 0;
 
@@ -79,6 +78,7 @@ void print_line(const char *linebuf, int line_num) {
     }
 
     expanded_line[idx] = '\0';
+
 
 	int line_printed = 0;
 	int offset = 0;
@@ -105,6 +105,7 @@ void print_line(const char *linebuf, int line_num) {
         }
 
         // LINE_DISPLAY_WIDTH 分ずつ出力
+
         int remaining = idx - offset;
         int chunk = remaining < LINE_DISPLAY_WIDTH ? remaining : LINE_DISPLAY_WIDTH;
         for (int i = 0; i < chunk; i++) {
