@@ -57,7 +57,6 @@ void print_with_color(char c) {
 /* 一行分の文字列を出力する関数  */
 void print_line(const char *linebuf, int line_num) {
     int content_width = 0;
-    // int line_len = strlen(linebuf);
     char expanded_line[MAX_LINE * 4];
     int idx = 0;
 
@@ -80,29 +79,32 @@ void print_line(const char *linebuf, int line_num) {
 
     expanded_line[idx] = '\0';
 
-    int line_printed = 0;
-    int offset = 0;
-    
+
+	int line_printed = 0;
+	int offset = 0;
+
     int terminal_width = get_terminal_width();
     int margin = (terminal_width - LINE_DISPLAY_WIDTH) / 2;
 
     while (offset < idx) {
-		for (int i = 0; i < margin; i++) {
-			dprintf(1, " ");
-		}
+        for (int i = 0; i < margin; i++) {
+            dprintf(1, " ");
+        }
 
-		// 左揃えで行番号表示
-		if (opt_flag.number_all || (opt_flag.number_nonblank 
-					&& linebuf[0] != '\n' && linebuf[0] != '\0')) {
-			dprintf(1, "%6d\t", line_num);
-		} else if ((opt_flag.number_all || opt_flag.number_nonblank) 
-						&& line_printed > 0) {
-			            char number_buf[16];
+        if ((opt_flag.number_all 
+            || (opt_flag.number_nonblank 
+				&& linebuf[0] != '\n' && linebuf[0] != '\0')) 
+            && line_printed == 0) {
+            dprintf(1, "%6d\t", line_num);
+        } else if (opt_flag.number_all || opt_flag.number_nonblank) {
+            char number_buf[16];
             snprintf(number_buf, sizeof(number_buf), "%6d\t", 0);
-			for (size_t i = 0; i < strlen(number_buf); i++) {
+            for (size_t i = 0; i < strlen(number_buf); i++) {
                 dprintf(1, " ");
-			}
-		}
+            }
+        }
+
+        // LINE_DISPLAY_WIDTH 分ずつ出力
 
         int remaining = idx - offset;
         int chunk = remaining < LINE_DISPLAY_WIDTH ? remaining : LINE_DISPLAY_WIDTH;
@@ -119,7 +121,7 @@ void print_line(const char *linebuf, int line_num) {
 
         offset += chunk;
         line_printed++;
-	}
+    }
 }
 
 /* catの本体  */
